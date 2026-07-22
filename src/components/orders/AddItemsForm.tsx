@@ -123,9 +123,6 @@ function AddItemRowView({
   });
   const options = detailQuery.data?.options ?? [];
   const hasOptions = options.length > 0;
-  const allValues = options.flatMap((opt) =>
-    opt.values.map((v) => ({ id: v.id, label: `${opt.name}: ${v.value}` })),
-  );
   const missingOption = hasOptions && !row.productOptionValueId;
 
   // 옵션이 필요한데 아직 안 고른 상태를 부모에게 알려서 제출 버튼을 막는다.
@@ -149,14 +146,23 @@ function AddItemRowView({
               onChange={(e) => onChange({ productOptionValueId: e.target.value })}
             >
               <option value="">옵션 선택</option>
-              {allValues.map((v) => (
-                <option key={v.id} value={v.id}>
-                  {v.label}
-                </option>
+              {options.map((opt) => (
+                <optgroup key={opt.id} label={opt.name}>
+                  {opt.values.map((v) => (
+                    <option key={v.id} value={v.id}>
+                      {v.value}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </Select>
             {missingOption && (
               <p className="mt-1 text-xs text-red-500">이 상품은 옵션을 선택해야 해요.</p>
+            )}
+            {options.length > 1 && (
+              <p className="mt-1 text-xs text-amber-600">
+                옵션 그룹이 여러 개인 상품이에요. 한 번에 하나만 선택할 수 있어요.
+              </p>
             )}
           </div>
         )}

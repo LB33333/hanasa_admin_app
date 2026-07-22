@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Trash2 } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { FormEvent, useState } from 'react';
 import { salonsApi } from '@/api/salons';
 import { paymentsApi } from '@/api/payments';
@@ -10,8 +10,8 @@ import { Drawer } from '@/components/ui/Drawer';
 import { Input, Select, Textarea } from '@/components/ui/formControls';
 import { Spinner } from '@/components/ui/Spinner';
 import { useToast } from '@/components/ui/Toast';
-import { formatCurrency, formatDateTime, maskPhoneNumber } from '@/lib/format';
-import { PAYMENT_METHODS, PaymentMethod } from '@/types/payment';
+import { formatCurrency, formatDateTime, maskPhoneNumber, toDateInputValue } from '@/lib/format';
+import { PAYMENT_METHODS, Payment, PaymentMethod } from '@/types/payment';
 import { SalonStatusBadge } from './SalonStatusBadge';
 
 export function SalonDetailDrawer({
@@ -43,6 +43,7 @@ function SalonDetailContent({ salonId }: { salonId: string }) {
 
   const [initialDebtInput, setInitialDebtInput] = useState<string | null>(null);
   const [deletePaymentId, setDeletePaymentId] = useState<string | null>(null);
+  const [editPaymentId, setEditPaymentId] = useState<string | null>(null);
 
   const invalidateAll = () => {
     void queryClient.invalidateQueries({ queryKey: ['salon', salonId] });
@@ -86,6 +87,17 @@ function SalonDetailContent({ salonId }: { salonId: string }) {
       toast.show('결제 기록을 삭제했어요.', 'success');
     },
     onError: () => toast.show('삭제하지 못했어요.', 'error'),
+  });
+
+  const updatePaymentMutation = useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: Parameters<typeof paymentsApi.update>[1] }) =>
+      paymentsApi.update(id, payload),
+    onSuccess: () => {
+      invalidateAll();
+      setEditPaymentId(null);
+      toast.show('결제 기록을 수정했어요.', 'success');
+    },
+    onError: () => toast.show('수정하지 못했어요.', 'error'),
   });
 
   if (salonQuery.isLoading || !salonQuery.data) {
@@ -187,33 +199,53 @@ function SalonDetailContent({ salonId }: { salonId: string }) {
           <Spinner className="py-6" />
         ) : paymentsQuery.data?.items.length ? (
           <ul className="space-y-2">
-            {paymentsQuery.data.items.map((payment) => (
-              <li
-                key={payment.id}
-                className="flex items-start justify-between rounded-lg border border-gray-100 p-3"
-              >
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-gray-900">
-                      -{formatCurrency(payment.amount)}
-                    </span>
-                    <Badge tone="gray">{payment.method}</Badge>
-                  </div>
-                  <p className="mt-0.5 text-xs text-gray-400">{formatDateTime(payment.paidAt)}</p>
-                  {payment.memo && <p className="mt-1 text-xs text-gray-500">{payment.memo}</p>}
-                  <p className="mt-1 text-xs text-gray-400">
-                    {formatCurrency(payment.outstandingBefore)} → {formatCurrency(payment.outstandingAfter)}
-                  </p>
-                </div>
-                <button
-                  className="rounded p-1 text-gray-300 hover:bg-red-50 hover:text-red-500"
-                  onClick={() => setDeletePaymentId(payment.id)}
-                  aria-label="삭제"
+            {paymentsQuery.data.items.map((payment) =>
+              editPaymentId === payment.id ? (
+                <li key={payment.id} className="rounded-lg border border-gray-200 p-3">
+                  <EditPaymentForm
+                    payment={payment}
+                    loading={updatePaymentMutation.isPending}
+                    onSubmit={(payload) => updatePaymentMutation.mutate({ id: payment.id, payload })}
+                    onCancel={() => setEditPaymentId(null)}
+                  />
+                </li>
+              ) : (
+                <li
+                  key={payment.id}
+                  className="flex items-start justify-between rounded-lg border border-gray-100 p-3"
                 >
-                  <Trash2 size={15} />
-                </button>
-              </li>
-            ))}
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-gray-900">
+                        -{formatCurrency(payment.amount)}
+                      </span>
+                      <Badge tone="gray">{payment.method}</Badge>
+                    </div>
+                    <p className="mt-0.5 text-xs text-gray-400">{formatDateTime(payment.paidAt)}</p>
+                    {payment.memo && <p className="mt-1 text-xs text-gray-500">{payment.memo}</p>}
+                    <p className="mt-1 text-xs text-gray-400">
+                      {formatCurrency(payment.outstandingBefore)} → {formatCurrency(payment.outstandingAfter)}
+                    </p>
+                  </div>
+                  <div className="flex gap-1">
+                    <button
+                      className="rounded p-1 text-gray-300 hover:bg-gray-100 hover:text-gray-700"
+                      onClick={() => setEditPaymentId(payment.id)}
+                      aria-label="수정"
+                    >
+                      <Pencil size={15} />
+                    </button>
+                    <button
+                      className="rounded p-1 text-gray-300 hover:bg-red-50 hover:text-red-500"
+                      onClick={() => setDeletePaymentId(payment.id)}
+                      aria-label="삭제"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
+                </li>
+              ),
+            )}
           </ul>
         ) : (
           <p className="py-4 text-center text-sm text-gray-400">결제 기록이 없어요.</p>
@@ -266,27 +298,25 @@ function RecordPaymentForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-2 rounded-xl border border-gray-200 p-3">
-      <div className="flex gap-2">
-        <Input
-          type="number"
-          min={1}
-          placeholder="결제 금액"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          className="flex-1"
-        />
-        <Select
-          value={method}
-          onChange={(e) => setMethod(e.target.value as PaymentMethod)}
-          className="w-24"
-        >
-          {PAYMENT_METHODS.map((m) => (
-            <option key={m} value={m}>
-              {m}
-            </option>
-          ))}
-        </Select>
-      </div>
+      <Input
+        type="number"
+        min={1}
+        placeholder="결제 금액"
+        value={amount}
+        onChange={(e) => setAmount(e.target.value)}
+        className="w-full"
+      />
+      <Select
+        value={method}
+        onChange={(e) => setMethod(e.target.value as PaymentMethod)}
+        className="w-full"
+      >
+        {PAYMENT_METHODS.map((m) => (
+          <option key={m} value={m}>
+            {m}
+          </option>
+        ))}
+      </Select>
       <Textarea
         placeholder="메모 (선택)"
         value={memo}
@@ -296,6 +326,82 @@ function RecordPaymentForm({
       <Button type="submit" size="sm" className="w-full" loading={loading} disabled={!amount}>
         결제 기록 추가
       </Button>
+    </form>
+  );
+}
+
+function EditPaymentForm({
+  payment,
+  loading,
+  onSubmit,
+  onCancel,
+}: {
+  payment: Payment;
+  loading: boolean;
+  onSubmit: (payload: {
+    amount: number;
+    method: PaymentMethod;
+    paidAt?: string;
+    memo?: string;
+  }) => void;
+  onCancel: () => void;
+}) {
+  const [amount, setAmount] = useState(String(payment.amount));
+  const [method, setMethod] = useState<PaymentMethod>(payment.method);
+  const [paidAt, setPaidAt] = useState(toDateInputValue(payment.paidAt));
+  const [memo, setMemo] = useState(payment.memo ?? '');
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    const value = Number(amount);
+    if (!Number.isFinite(value) || value <= 0) {
+      return;
+    }
+    onSubmit({
+      amount: value,
+      method,
+      paidAt: paidAt ? new Date(paidAt).toISOString() : undefined,
+      memo: memo.trim(),
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-2">
+      <Input
+        type="number"
+        min={1}
+        placeholder="결제 금액"
+        value={amount}
+        onChange={(e) => setAmount(e.target.value)}
+        className="w-full"
+        autoFocus
+      />
+      <Select
+        value={method}
+        onChange={(e) => setMethod(e.target.value as PaymentMethod)}
+        className="w-full"
+      >
+        {PAYMENT_METHODS.map((m) => (
+          <option key={m} value={m}>
+            {m}
+          </option>
+        ))}
+      </Select>
+      <Input type="date" value={paidAt} onChange={(e) => setPaidAt(e.target.value)} className="w-full" />
+      <Textarea
+        placeholder="메모 (선택)"
+        value={memo}
+        onChange={(e) => setMemo(e.target.value)}
+        rows={2}
+      />
+      <div className="flex gap-2">
+        <Button type="submit" size="sm" className="flex-1" loading={loading} disabled={!amount}>
+          저장
+        </Button>
+        <Button type="button" variant="secondary" size="sm" className="flex-1" onClick={onCancel}>
+          취소
+        </Button>
+      </div>
     </form>
   );
 }

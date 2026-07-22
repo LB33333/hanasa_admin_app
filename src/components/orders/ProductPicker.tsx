@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { AdminProduct } from '@/types/product';
-import { Input } from '@/components/ui/formControls';
+import { Input, Select } from '@/components/ui/formControls';
+import { PRODUCT_MANUFACTURERS } from '@/constants/manufacturers';
 
 export function ProductPicker({
   products,
@@ -11,6 +12,7 @@ export function ProductPicker({
   value: string;
   onChange: (productId: string) => void;
 }) {
+  const [manufacturer, setManufacturer] = useState('');
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -19,22 +21,40 @@ export function ProductPicker({
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const list = q ? products.filter((p) => p.name.toLowerCase().includes(q)) : products;
+    const byManufacturer = manufacturer
+      ? products.filter((p) => p.manufacturer === manufacturer)
+      : products;
+    const list = q ? byManufacturer.filter((p) => p.name.toLowerCase().includes(q)) : byManufacturer;
     return list.slice(0, 30);
-  }, [products, query]);
+  }, [products, manufacturer, query]);
 
   return (
     <div className="relative" ref={containerRef}>
-      <Input
-        placeholder="상품 검색"
-        value={open ? query : (selected?.name ?? '')}
-        onFocus={() => {
-          setOpen(true);
-          setQuery('');
-        }}
-        onChange={(e) => setQuery(e.target.value)}
-        onBlur={() => setTimeout(() => setOpen(false), 150)}
-      />
+      <div className="flex gap-2">
+        <Select
+          value={manufacturer}
+          onChange={(e) => setManufacturer(e.target.value)}
+          onFocus={() => setOpen(true)}
+          className="w-28 shrink-0"
+        >
+          <option value="">전체 회사</option>
+          {PRODUCT_MANUFACTURERS.map((m) => (
+            <option key={m} value={m}>
+              {m}
+            </option>
+          ))}
+        </Select>
+        <Input
+          placeholder="상품 검색"
+          value={open ? query : (selected?.name ?? '')}
+          onFocus={() => {
+            setOpen(true);
+            setQuery('');
+          }}
+          onChange={(e) => setQuery(e.target.value)}
+          onBlur={() => setTimeout(() => setOpen(false), 150)}
+        />
+      </div>
       {open && (
         <div className="absolute z-20 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
           {results.length === 0 ? (

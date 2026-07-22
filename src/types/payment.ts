@@ -19,3 +19,10 @@ export type CreatePaymentPayload = {
   paidAt?: string;
   memo?: string;
 };
+
+export type UpdatePaymentPayload = {
+  amount?: number;
+  method?: PaymentMethod;
+  paidAt?: string;
+  memo?: string;
+};
