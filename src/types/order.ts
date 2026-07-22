@@ -3,6 +3,7 @@ export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
 export type OrderItemSummary = {
   id: string;
+  product: { id: string };
   productName: string;
   optionName: string | null;
   optionValue: string | null;
@@ -33,4 +34,5 @@ export type AddOrderItemPayload = {
   productId: string;
   productOptionValueId?: string;
   quantity: number;
+  unitPrice?: number;
 };

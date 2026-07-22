@@ -16,4 +16,7 @@ export const ordersApi = {
 
   addItems: (id: string, items: AddOrderItemPayload[]) =>
     apiClient.post<AdminOrder>(`/admin/orders/${id}/items`, { items }),
+
+  updateItemPrice: (orderId: string, itemId: string, unitPrice: number) =>
+    apiClient.patch<AdminOrder>(`/admin/orders/${orderId}/items/${itemId}`, { unitPrice }),
 };

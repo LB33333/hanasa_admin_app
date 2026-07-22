@@ -6,12 +6,25 @@ import { Button } from '@/components/ui/Button';
 import { Input, Select } from '@/components/ui/formControls';
 import { AdminProduct } from '@/types/product';
 import { AddOrderItemPayload } from '@/types/order';
+import { DiscountPriceInput } from './DiscountPriceInput';
 import { ProductPicker } from './ProductPicker';
 
-type Row = { key: number; productId: string; productOptionValueId: string; quantity: string };
+type Row = {
+  key: number;
+  productId: string;
+  productOptionValueId: string;
+  quantity: string;
+  unitPrice: string;
+};
 
 let rowKeySeq = 0;
-const emptyRow = (): Row => ({ key: ++rowKeySeq, productId: '', productOptionValueId: '', quantity: '1' });
+const emptyRow = (): Row => ({
+  key: ++rowKeySeq,
+  productId: '',
+  productOptionValueId: '',
+  quantity: '1',
+  unitPrice: '',
+});
 
 export function AddItemsForm({
   loading,
@@ -56,6 +69,7 @@ export function AddItemsForm({
       productId: r.productId,
       productOptionValueId: r.productOptionValueId || undefined,
       quantity: Number(r.quantity),
+      unitPrice: r.unitPrice !== '' ? Number(r.unitPrice) : undefined,
     }));
     const success = await onSubmit(items);
     if (success) {
@@ -124,6 +138,7 @@ function AddItemRowView({
   const options = detailQuery.data?.options ?? [];
   const hasOptions = options.length > 0;
   const missingOption = hasOptions && !row.productOptionValueId;
+  const selectedProduct = products.find((p) => p.id === row.productId) ?? null;
 
   // 옵션이 필요한데 아직 안 고른 상태를 부모에게 알려서 제출 버튼을 막는다.
   useEffect(() => {
@@ -137,7 +152,7 @@ function AddItemRowView({
         <ProductPicker
           products={products}
           value={row.productId}
-          onChange={(productId) => onChange({ productId, productOptionValueId: '' })}
+          onChange={(productId) => onChange({ productId, productOptionValueId: '', unitPrice: '' })}
         />
         {hasOptions && (
           <div>
@@ -172,6 +187,11 @@ function AddItemRowView({
           value={row.quantity}
           onChange={(e) => onChange({ quantity: e.target.value })}
           placeholder="수량"
+        />
+        <DiscountPriceInput
+          basePrice={selectedProduct?.salonPrice ?? null}
+          value={row.unitPrice}
+          onChange={(unitPrice) => onChange({ unitPrice })}
         />
       </div>
       {onRemove && (

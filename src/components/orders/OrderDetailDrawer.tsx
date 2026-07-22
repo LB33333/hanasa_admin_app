@@ -1,15 +1,18 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Pencil } from 'lucide-react';
 import { FormEvent, useState } from 'react';
 import { ordersApi } from '@/api/orders';
+import { productsApi } from '@/api/products';
 import { Button } from '@/components/ui/Button';
 import { Drawer } from '@/components/ui/Drawer';
 import { Field, Input, Select } from '@/components/ui/formControls';
 import { useToast } from '@/components/ui/Toast';
 import { ApiError } from '@/lib/apiClient';
 import { formatCurrency, formatDateTime, maskPhoneNumber, toDateInputValue } from '@/lib/format';
-import { AdminOrder, ORDER_STATUSES, OrderStatus } from '@/types/order';
+import { AdminOrder, ORDER_STATUSES, OrderStatus, OrderItemSummary } from '@/types/order';
 import { AddOrderItemPayload } from '@/types/order';
 import { AddItemsForm } from './AddItemsForm';
+import { DiscountPriceInput } from './DiscountPriceInput';
 import { OrderStatusBadge } from './OrderStatusBadge';
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -73,6 +76,18 @@ function OrderDetailContent({ order }: { order: AdminOrder }) {
     onError: (error) => toast.show(describeError(error, '상품 추가에 실패했어요.'), 'error'),
   });
 
+  const [editItemId, setEditItemId] = useState<string | null>(null);
+  const updateItemPriceMutation = useMutation({
+    mutationFn: ({ itemId, unitPrice }: { itemId: string; unitPrice: number }) =>
+      ordersApi.updateItemPrice(order.id, itemId, unitPrice),
+    onSuccess: () => {
+      invalidate();
+      setEditItemId(null);
+      toast.show('단가를 수정했어요.', 'success');
+    },
+    onError: (error) => toast.show(describeError(error, '단가 수정에 실패했어요.'), 'error'),
+  });
+
   const isCancelled = order.status === '취소';
 
   return (
@@ -94,24 +109,49 @@ function OrderDetailContent({ order }: { order: AdminOrder }) {
       <div>
         <h4 className="mb-2 text-sm font-semibold text-gray-700">주문 상품</h4>
         <ul className="divide-y divide-gray-100 rounded-lg border border-gray-100">
-          {order.items.map((item) => (
-            <li key={item.id} className="flex items-center justify-between px-3 py-2 text-sm">
-              <div>
-                <p className="text-gray-900">{item.productName}</p>
-                {item.optionName && (
+          {order.items.map((item) =>
+            editItemId === item.id ? (
+              <li key={item.id} className="px-3 py-2.5">
+                <EditItemPriceForm
+                  item={item}
+                  loading={updateItemPriceMutation.isPending}
+                  onSubmit={(unitPrice) =>
+                    updateItemPriceMutation.mutate({ itemId: item.id, unitPrice })
+                  }
+                  onCancel={() => setEditItemId(null)}
+                />
+              </li>
+            ) : (
+              <li key={item.id} className="flex items-center justify-between px-3 py-2 text-sm">
+                <div>
+                  <p className="text-gray-900">{item.productName}</p>
+                  {item.optionName && (
+                    <p className="text-xs text-gray-400">
+                      {item.optionName}: {item.optionValue}
+                    </p>
+                  )}
                   <p className="text-xs text-gray-400">
-                    {item.optionName}: {item.optionValue}
+                    {formatCurrency(item.unitPrice)} × {item.quantity}
                   </p>
-                )}
-                <p className="text-xs text-gray-400">
-                  {formatCurrency(item.unitPrice)} × {item.quantity}
-                </p>
-              </div>
-              <p className="font-medium text-gray-900">
-                {formatCurrency(item.unitPrice * item.quantity)}
-              </p>
-            </li>
-          ))}
+                </div>
+                <div className="flex items-center gap-2">
+                  <p className="font-medium text-gray-900">
+                    {formatCurrency(item.unitPrice * item.quantity)}
+                  </p>
+                  {!isCancelled && (
+                    <button
+                      type="button"
+                      className="rounded border border-gray-200 p-1.5 text-gray-500 hover:border-gray-400 hover:bg-gray-100 hover:text-gray-900"
+                      onClick={() => setEditItemId(item.id)}
+                      aria-label="단가 수정"
+                    >
+                      <Pencil size={14} />
+                    </button>
+                  )}
+                </div>
+              </li>
+            ),
+          )}
         </ul>
         <div className="mt-2 flex justify-between px-1 text-sm font-semibold text-gray-900">
           <span>합계</span>
@@ -175,5 +215,51 @@ function OrderDetailContent({ order }: { order: AdminOrder }) {
         </>
       )}
     </div>
+  );
+}
+
+function EditItemPriceForm({
+  item,
+  loading,
+  onSubmit,
+  onCancel,
+}: {
+  item: OrderItemSummary;
+  loading: boolean;
+  onSubmit: (unitPrice: number) => void;
+  onCancel: () => void;
+}) {
+  const [unitPrice, setUnitPrice] = useState(String(item.unitPrice));
+  const productQuery = useQuery({
+    queryKey: ['product', item.product.id],
+    queryFn: () => productsApi.get(item.product.id),
+  });
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    const value = Number(unitPrice);
+    if (!Number.isFinite(value) || value < 0) {
+      return;
+    }
+    onSubmit(value);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-2">
+      <p className="text-sm text-gray-900">{item.productName}</p>
+      <DiscountPriceInput
+        basePrice={productQuery.data?.salonPrice ?? null}
+        value={unitPrice}
+        onChange={setUnitPrice}
+      />
+      <div className="flex gap-2">
+        <Button type="submit" size="sm" className="flex-1" loading={loading}>
+          저장
+        </Button>
+        <Button type="button" variant="secondary" size="sm" className="flex-1" onClick={onCancel}>
+          취소
+        </Button>
+      </div>
+    </form>
   );
 }
