@@ -19,4 +19,7 @@ export const ordersApi = {
 
   updateItemPrice: (orderId: string, itemId: string, unitPrice: number) =>
     apiClient.patch<AdminOrder>(`/admin/orders/${orderId}/items/${itemId}`, { unitPrice }),
+
+  removeItem: (orderId: string, itemId: string) =>
+    apiClient.delete<AdminOrder>(`/admin/orders/${orderId}/items/${itemId}`),
 };

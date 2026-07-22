@@ -104,7 +104,11 @@ export default function OrdersPage() {
         </>
       )}
 
-      <OrderDetailDrawer order={selectedOrder} onClose={() => setSelectedId(null)} />
+      <OrderDetailDrawer
+        open={selectedId !== null}
+        order={selectedOrder}
+        onClose={() => setSelectedId(null)}
+      />
     </div>
   );
 }

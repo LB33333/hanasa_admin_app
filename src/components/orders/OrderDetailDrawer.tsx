@@ -1,11 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Pencil } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { FormEvent, useState } from 'react';
 import { ordersApi } from '@/api/orders';
 import { productsApi } from '@/api/products';
 import { Button } from '@/components/ui/Button';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Drawer } from '@/components/ui/Drawer';
 import { Field, Input, Select } from '@/components/ui/formControls';
+import { Spinner } from '@/components/ui/Spinner';
 import { useToast } from '@/components/ui/Toast';
 import { ApiError } from '@/lib/apiClient';
 import { formatCurrency, formatDateTime, maskPhoneNumber, toDateInputValue } from '@/lib/format';
@@ -18,6 +20,8 @@ import { OrderStatusBadge } from './OrderStatusBadge';
 const ERROR_MESSAGES: Record<string, string> = {
   ORDER_CANCELLED: '취소된 주문이라 변경할 수 없어요.',
   ORDER_NOT_FOUND: '주문을 찾을 수 없어요. 새로고침해 주세요.',
+  ORDER_ITEM_NOT_FOUND: '이미 삭제된 상품이에요. 새로고침해 주세요.',
+  LAST_ITEM_IN_ORDER: '상품이 하나만 남은 주문이에요. 삭제하려면 주문 자체를 취소해 주세요.',
   OPTION_REQUIRED: '옵션을 선택해야 하는 상품이 있어요.',
   OPTION_VALUE_MISMATCH: '선택한 옵션이 해당 상품의 옵션이 아니에요.',
   OPTION_VALUE_NOT_FOUND: '선택한 옵션값을 찾을 수 없어요.',
@@ -33,15 +37,17 @@ function describeError(error: unknown, fallback: string): string {
 }
 
 export function OrderDetailDrawer({
+  open,
   order,
   onClose,
 }: {
+  open: boolean;
   order: AdminOrder | null;
   onClose: () => void;
 }) {
   return (
-    <Drawer open={order !== null} onClose={onClose} title="주문 상세">
-      {order && <OrderDetailContent order={order} />}
+    <Drawer open={open} onClose={onClose} title="주문 상세">
+      {order ? <OrderDetailContent order={order} /> : <Spinner className="py-10" />}
     </Drawer>
   );
 }
@@ -86,6 +92,17 @@ function OrderDetailContent({ order }: { order: AdminOrder }) {
       toast.show('단가를 수정했어요.', 'success');
     },
     onError: (error) => toast.show(describeError(error, '단가 수정에 실패했어요.'), 'error'),
+  });
+
+  const [deleteItemId, setDeleteItemId] = useState<string | null>(null);
+  const removeItemMutation = useMutation({
+    mutationFn: (itemId: string) => ordersApi.removeItem(order.id, itemId),
+    onSuccess: () => {
+      invalidate();
+      setDeleteItemId(null);
+      toast.show('상품을 삭제했어요.', 'success');
+    },
+    onError: (error) => toast.show(describeError(error, '삭제에 실패했어요.'), 'error'),
   });
 
   const isCancelled = order.status === '취소';
@@ -139,14 +156,24 @@ function OrderDetailContent({ order }: { order: AdminOrder }) {
                     {formatCurrency(item.unitPrice * item.quantity)}
                   </p>
                   {!isCancelled && (
-                    <button
-                      type="button"
-                      className="rounded border border-gray-200 p-1.5 text-gray-500 hover:border-gray-400 hover:bg-gray-100 hover:text-gray-900"
-                      onClick={() => setEditItemId(item.id)}
-                      aria-label="단가 수정"
-                    >
-                      <Pencil size={14} />
-                    </button>
+                    <>
+                      <button
+                        type="button"
+                        className="rounded border border-gray-200 p-1.5 text-gray-500 hover:border-gray-400 hover:bg-gray-100 hover:text-gray-900"
+                        onClick={() => setEditItemId(item.id)}
+                        aria-label="단가 수정"
+                      >
+                        <Pencil size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        className="rounded border border-gray-200 p-1.5 text-gray-500 hover:border-red-300 hover:bg-red-50 hover:text-red-500"
+                        onClick={() => setDeleteItemId(item.id)}
+                        aria-label="상품 삭제"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </>
                   )}
                 </div>
               </li>
@@ -214,6 +241,17 @@ function OrderDetailContent({ order }: { order: AdminOrder }) {
           </div>
         </>
       )}
+
+      <ConfirmDialog
+        open={deleteItemId !== null}
+        title="상품 삭제"
+        description="이 상품을 주문에서 삭제할까요?"
+        confirmLabel="삭제"
+        danger
+        loading={removeItemMutation.isPending}
+        onConfirm={() => deleteItemId && removeItemMutation.mutate(deleteItemId)}
+        onCancel={() => setDeleteItemId(null)}
+      />
     </div>
   );
 }
