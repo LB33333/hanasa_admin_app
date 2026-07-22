@@ -73,44 +73,29 @@ export default function SalonsPage() {
       ) : filtered.length === 0 ? (
         <EmptyState title="조건에 맞는 살롱이 없어요." />
       ) : (
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-100 bg-gray-50 text-left text-xs font-medium text-gray-400">
-                <th className="px-4 py-2.5">이름</th>
-                <th className="hidden px-4 py-2.5 sm:table-cell">전화번호</th>
-                <th className="px-4 py-2.5">상태</th>
-                <th className="px-4 py-2.5 text-right">미수금</th>
-                <th className="hidden px-4 py-2.5 text-right sm:table-cell">가입일</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((salon) => (
-                <tr
-                  key={salon.id}
-                  className="cursor-pointer border-b border-gray-50 last:border-0 hover:bg-gray-50"
-                  onClick={() => setSelectedId(salon.id)}
-                >
-                  <td className="px-4 py-3 font-medium text-gray-900">
-                    {salon.name || <span className="text-gray-300">이름 미입력</span>}
-                  </td>
-                  <td className="hidden px-4 py-3 text-gray-500 sm:table-cell">
-                    {maskPhoneNumber(salon.phoneNumber)}
-                  </td>
-                  <td className="px-4 py-3">
-                    <SalonStatusBadge isApproved={salon.isApproved} />
-                  </td>
-                  <td className="px-4 py-3 text-right text-gray-700">
-                    {formatCurrency(salon.outstandingAmount)}
-                  </td>
-                  <td className="hidden px-4 py-3 text-right text-gray-400 sm:table-cell">
-                    {formatDate(salon.createdAt)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <ul className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+          {filtered.map((salon) => (
+            <li
+              key={salon.id}
+              className="cursor-pointer border-b border-gray-50 px-4 py-3 last:border-0 hover:bg-gray-50"
+              onClick={() => setSelectedId(salon.id)}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-medium text-gray-900">
+                  {salon.name || <span className="text-gray-300">이름 미입력</span>}
+                </span>
+                <SalonStatusBadge isApproved={salon.isApproved} />
+              </div>
+              <div className="mt-1 flex items-center justify-between text-sm">
+                <span className="text-gray-500">{maskPhoneNumber(salon.phoneNumber)}</span>
+                <span className="font-medium text-gray-700">
+                  {formatCurrency(salon.outstandingAmount)}
+                </span>
+              </div>
+              <p className="mt-0.5 text-xs text-gray-400">가입일 {formatDate(salon.createdAt)}</p>
+            </li>
+          ))}
+        </ul>
       )}
 
       <SalonDetailDrawer salonId={selectedId} onClose={() => setSelectedId(null)} />

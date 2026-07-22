@@ -62,44 +62,31 @@ export default function OrdersPage() {
         <EmptyState title="주문이 없어요." />
       ) : (
         <>
-          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-100 bg-gray-50 text-left text-xs font-medium text-gray-400">
-                  <th className="px-4 py-2.5">살롱</th>
-                  <th className="px-4 py-2.5">상품</th>
-                  <th className="px-4 py-2.5 text-right">금액</th>
-                  <th className="px-4 py-2.5">상태</th>
-                  <th className="hidden px-4 py-2.5 text-right sm:table-cell">주문일</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.items.map((order) => (
-                  <tr
-                    key={order.id}
-                    className="cursor-pointer border-b border-gray-50 last:border-0 hover:bg-gray-50"
-                    onClick={() => setSelectedId(order.id)}
-                  >
-                    <td className="px-4 py-3 font-medium text-gray-900">
-                      {order.salon.name || '이름 미입력'}
-                    </td>
-                    <td className="max-w-[220px] truncate px-4 py-3 text-gray-500">
-                      {order.items.map((i) => i.productName).join(', ')}
-                    </td>
-                    <td className="px-4 py-3 text-right text-gray-700">
-                      {formatCurrency(order.totalAmount)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <OrderStatusBadge status={order.status} />
-                    </td>
-                    <td className="hidden px-4 py-3 text-right text-gray-400 sm:table-cell">
-                      {formatDateTime(order.createdAt)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <ul className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+            {data.items.map((order) => (
+              <li
+                key={order.id}
+                className="cursor-pointer border-b border-gray-50 px-4 py-3 last:border-0 hover:bg-gray-50"
+                onClick={() => setSelectedId(order.id)}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-medium text-gray-900">
+                    {order.salon.name || '이름 미입력'}
+                  </span>
+                  <OrderStatusBadge status={order.status} />
+                </div>
+                <p className="mt-0.5 truncate text-sm text-gray-500">
+                  {order.items.map((i) => i.productName).join(', ')}
+                </p>
+                <div className="mt-1 flex items-center justify-between text-sm">
+                  <span className="text-gray-400">{formatDateTime(order.createdAt)}</span>
+                  <span className="font-medium text-gray-700">
+                    {formatCurrency(order.totalAmount)}
+                  </span>
+                </div>
+              </li>
+            ))}
+          </ul>
           <Pagination page={data.page} totalPages={data.totalPages} onChange={setPage} />
         </>
       )}
