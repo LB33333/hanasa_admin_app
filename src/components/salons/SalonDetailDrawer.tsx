@@ -229,18 +229,18 @@ function SalonDetailContent({ salonId }: { salonId: string }) {
                   </div>
                   <div className="flex gap-1">
                     <button
-                      className="rounded p-1 text-gray-300 hover:bg-gray-100 hover:text-gray-700"
+                      className="rounded border border-gray-200 p-1.5 text-gray-500 hover:border-gray-400 hover:bg-gray-100 hover:text-gray-900"
                       onClick={() => setEditPaymentId(payment.id)}
                       aria-label="수정"
                     >
-                      <Pencil size={15} />
+                      <Pencil size={16} />
                     </button>
                     <button
-                      className="rounded p-1 text-gray-300 hover:bg-red-50 hover:text-red-500"
+                      className="rounded border border-gray-200 p-1.5 text-gray-500 hover:border-red-300 hover:bg-red-50 hover:text-red-500"
                       onClick={() => setDeletePaymentId(payment.id)}
                       aria-label="삭제"
                     >
-                      <Trash2 size={15} />
+                      <Trash2 size={16} />
                     </button>
                   </div>
                 </li>
