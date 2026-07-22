@@ -30,12 +30,12 @@ export function ProductPicker({
 
   return (
     <div className="relative" ref={containerRef}>
-      <div className="flex gap-2">
+      <div className="space-y-2">
         <Select
           value={manufacturer}
           onChange={(e) => setManufacturer(e.target.value)}
           onFocus={() => setOpen(true)}
-          className="w-28 shrink-0"
+          className="w-full"
         >
           <option value="">전체 회사</option>
           {PRODUCT_MANUFACTURERS.map((m) => (
