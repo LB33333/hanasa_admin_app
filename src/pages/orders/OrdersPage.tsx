@@ -1,10 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
+import { Plus } from 'lucide-react';
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ordersApi } from '@/api/orders';
+import { CreateOrderModal } from '@/components/orders/CreateOrderModal';
 import { OrderDetailDrawer } from '@/components/orders/OrderDetailDrawer';
 import { OrderStatusBadge } from '@/components/orders/OrderStatusBadge';
 import { PageHeader } from '@/components/layout/PageHeader';
+import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Pagination } from '@/components/ui/Pagination';
 import { Spinner } from '@/components/ui/Spinner';
@@ -22,6 +25,7 @@ export default function OrdersPage() {
   const [status, setStatus] = useState<OrderStatus | 'all'>(initialStatus ?? 'all');
   const [page, setPage] = useState(1);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ['orders', { status, page }],
@@ -37,7 +41,15 @@ export default function OrdersPage() {
 
   return (
     <div>
-      <PageHeader title="주문" description="주문 상태 변경, 추가 주문 접수를 관리해요." />
+      <PageHeader
+        title="주문"
+        description="주문 상태 변경, 추가 주문 접수를 관리해요."
+        action={
+          <Button size="sm" onClick={() => setCreating(true)}>
+            <Plus size={15} /> 새 주문
+          </Button>
+        }
+      />
 
       <div className="mb-4 flex gap-1.5 overflow-x-auto pb-1">
         {FILTERS.map((f) => (
@@ -96,6 +108,7 @@ export default function OrdersPage() {
         order={selectedOrder}
         onClose={() => setSelectedId(null)}
       />
+      <CreateOrderModal open={creating} onClose={() => setCreating(false)} />
     </div>
   );
 }

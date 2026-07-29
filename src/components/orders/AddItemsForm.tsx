@@ -29,10 +29,12 @@ const emptyRow = (): Row => ({
 export function AddItemsForm({
   loading,
   onSubmit,
+  submitLabel = '주문에 추가',
 }: {
   loading: boolean;
   // true를 반환하면(성공) 폼을 비운다. false/실패면 입력값을 그대로 유지해서 다시 시도할 수 있게 한다.
   onSubmit: (items: AddOrderItemPayload[]) => Promise<boolean>;
+  submitLabel?: string;
 }) {
   const [rows, setRows] = useState<Row[]>([emptyRow()]);
   // 옵션이 있는 상품인데 옵션을 아직 안 고른 행의 key 목록. 알려지기 전(로딩 중)에는 막지 않는다.
@@ -111,7 +113,7 @@ export function AddItemsForm({
         loading={loading}
         onClick={() => void handleSubmit()}
       >
-        주문에 추가
+        {submitLabel}
       </Button>
     </div>
   );

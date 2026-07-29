@@ -11,6 +11,9 @@ export const ordersApi = {
   list: (params: { page?: number; limit?: number; statuses?: OrderStatus[] }) =>
     apiClient.get<Paginated<AdminOrder>>('/admin/orders', params),
 
+  create: (salonId: string, items: AddOrderItemPayload[]) =>
+    apiClient.post<AdminOrder>('/admin/orders', { salonId, items }),
+
   update: (id: string, payload: AdminUpdateOrderPayload) =>
     apiClient.patch<AdminOrder>(`/admin/orders/${id}`, payload),
 
