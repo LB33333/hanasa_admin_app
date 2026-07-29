@@ -7,6 +7,7 @@ export type Salon = {
   isApproved: boolean;
   initialOutstandingAmount: number;
   outstandingAmount: number;
+  pointsBalance: number;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;

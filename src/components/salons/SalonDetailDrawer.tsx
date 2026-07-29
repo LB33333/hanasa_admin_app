@@ -184,6 +184,16 @@ function SalonDetailContent({ salonId }: { salonId: string }) {
         </div>
       </div>
 
+      <div className="rounded-xl border border-gray-200 p-4">
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium text-gray-700">적립금</span>
+          <span className="text-lg font-bold text-gray-900">
+            {formatCurrency(salon.pointsBalance)}
+          </span>
+        </div>
+        <p className="mt-1 text-xs text-gray-400">배송완료 시 주문 금액의 1%가 자동 적립돼요.</p>
+      </div>
+
       <div>
         <h4 className="mb-2 text-sm font-semibold text-gray-700">결제 기록 추가</h4>
         <RecordPaymentForm
