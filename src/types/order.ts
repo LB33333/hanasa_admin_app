@@ -36,3 +36,10 @@ export type AddOrderItemPayload = {
   quantity: number;
   unitPrice?: number;
 };
+
+export type PurchasedProduct = {
+  id: string;
+  name: string;
+  manufacturer: string;
+  imageUrl: string;
+};

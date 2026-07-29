@@ -228,6 +228,7 @@ function OrderDetailContent({ order }: { order: AdminOrder }) {
               상품 추가 <span className="font-normal text-gray-400">(전화 등 추가 주문)</span>
             </h4>
             <AddItemsForm
+              salonId={order.salon.id}
               loading={addItemsMutation.isPending}
               onSubmit={async (items) => {
                 try {

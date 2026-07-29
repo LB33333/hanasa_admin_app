@@ -5,11 +5,18 @@ import {
   AdminOrder,
   AdminUpdateOrderPayload,
   OrderStatus,
+  PurchasedProduct,
 } from '@/types/order';
 
 export const ordersApi = {
   list: (params: { page?: number; limit?: number; statuses?: OrderStatus[] }) =>
     apiClient.get<Paginated<AdminOrder>>('/admin/orders', params),
+
+  purchasedProducts: (salonId: string, limit = 20) =>
+    apiClient.get<Paginated<PurchasedProduct>>('/admin/orders/purchased-products', {
+      salonId,
+      limit,
+    }),
 
   create: (salonId: string, items: AddOrderItemPayload[]) =>
     apiClient.post<AdminOrder>('/admin/orders', { salonId, items }),

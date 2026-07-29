@@ -70,6 +70,7 @@ export function CreateOrderModal({ open, onClose }: { open: boolean; onClose: ()
 
         {salonId && (
           <AddItemsForm
+            salonId={salonId}
             loading={createMutation.isPending}
             submitLabel="주문 생성"
             onSubmit={async (items) => {

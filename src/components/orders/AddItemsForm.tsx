@@ -27,10 +27,12 @@ const emptyRow = (): Row => ({
 });
 
 export function AddItemsForm({
+  salonId,
   loading,
   onSubmit,
   submitLabel = '주문에 추가',
 }: {
+  salonId?: string;
   loading: boolean;
   // true를 반환하면(성공) 폼을 비운다. false/실패면 입력값을 그대로 유지해서 다시 시도할 수 있게 한다.
   onSubmit: (items: AddOrderItemPayload[]) => Promise<boolean>;
@@ -87,6 +89,7 @@ export function AddItemsForm({
           key={row.key}
           row={row}
           products={products}
+          salonId={salonId}
           onChange={(patch) => updateRow(row.key, patch)}
           onMissingOptionChange={(missing) => reportMissingOption(row.key, missing)}
           onRemove={
@@ -122,12 +125,14 @@ export function AddItemsForm({
 function AddItemRowView({
   row,
   products,
+  salonId,
   onChange,
   onMissingOptionChange,
   onRemove,
 }: {
   row: Row;
   products: AdminProduct[];
+  salonId?: string;
   onChange: (patch: Partial<Row>) => void;
   onMissingOptionChange: (missing: boolean) => void;
   onRemove?: () => void;
@@ -154,6 +159,7 @@ function AddItemRowView({
         <ProductPicker
           products={products}
           value={row.productId}
+          salonId={salonId}
           onChange={(productId) => onChange({ productId, productOptionValueId: '', unitPrice: '' })}
         />
         {hasOptions && (
