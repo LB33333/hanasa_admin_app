@@ -10,6 +10,7 @@ import ProductsPage from '@/pages/products/ProductsPage';
 import ProductCreatePage from '@/pages/products/ProductCreatePage';
 import ProductEditPage from '@/pages/products/ProductEditPage';
 import BannersPage from '@/pages/banners/BannersPage';
+import CouponsPage from '@/pages/coupons/CouponsPage';
 import NoticesPage from '@/pages/notices/NoticesPage';
 import PushComposerPage from '@/pages/push/PushComposerPage';
 
@@ -38,6 +39,7 @@ export default function App() {
         <Route path="products/new" element={<ProductCreatePage />} />
         <Route path="products/:id/edit" element={<ProductEditPage />} />
         <Route path="banners" element={<BannersPage />} />
+        <Route path="coupons" element={<CouponsPage />} />
         <Route path="notices" element={<NoticesPage />} />
         <Route path="push" element={<PushComposerPage />} />
       </Route>

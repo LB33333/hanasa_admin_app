@@ -7,6 +7,7 @@ import {
   Package,
   ShoppingBag,
   Store,
+  Ticket,
 } from 'lucide-react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
@@ -17,6 +18,7 @@ const NAV_ITEMS = [
   { to: '/orders', label: '주문', icon: ShoppingBag },
   { to: '/products', label: '상품', icon: Package },
   { to: '/banners', label: '배너', icon: ImageIcon },
+  { to: '/coupons', label: '쿠폰', icon: Ticket },
   { to: '/notices', label: '공지', icon: Megaphone },
   { to: '/push', label: '푸시 발송', icon: Bell },
 ];

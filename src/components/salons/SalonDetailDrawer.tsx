@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Pencil, Trash2 } from 'lucide-react';
 import { FormEvent, useState } from 'react';
 import { salonsApi } from '@/api/salons';
+import { couponsApi } from '@/api/coupons';
 import { paymentsApi } from '@/api/payments';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -13,6 +14,7 @@ import { useToast } from '@/components/ui/Toast';
 import { formatCurrency, formatDateTime, maskPhoneNumber, toDateInputValue } from '@/lib/format';
 import { PAYMENT_METHODS, Payment, PaymentMethod } from '@/types/payment';
 import { SalonStatusBadge } from './SalonStatusBadge';
+import { IssueCouponForm } from './IssueCouponForm';
 
 export function SalonDetailDrawer({
   salonId,
@@ -40,6 +42,10 @@ function SalonDetailContent({ salonId }: { salonId: string }) {
     queryKey: ['payments', salonId],
     queryFn: () => paymentsApi.listForSalon(salonId, { limit: 10 }),
   });
+  const couponsQuery = useQuery({
+    queryKey: ['salon-coupons', salonId],
+    queryFn: () => couponsApi.findIssuedForSalon(salonId),
+  });
 
   const [initialDebtInput, setInitialDebtInput] = useState<string | null>(null);
   const [deletePaymentId, setDeletePaymentId] = useState<string | null>(null);
@@ -49,7 +55,17 @@ function SalonDetailContent({ salonId }: { salonId: string }) {
     void queryClient.invalidateQueries({ queryKey: ['salon', salonId] });
     void queryClient.invalidateQueries({ queryKey: ['salons'] });
     void queryClient.invalidateQueries({ queryKey: ['payments', salonId] });
+    void queryClient.invalidateQueries({ queryKey: ['salon-coupons', salonId] });
   };
+
+  const issueCouponMutation = useMutation({
+    mutationFn: (couponId: string) => couponsApi.issue(couponId, salonId),
+    onSuccess: () => {
+      invalidateAll();
+      toast.show('쿠폰을 발급했어요.', 'success');
+    },
+    onError: () => toast.show('쿠폰 발급에 실패했어요.', 'error'),
+  });
 
   const approveMutation = useMutation({
     mutationFn: (isApproved: boolean) => salonsApi.update(salonId, { isApproved }),
@@ -192,6 +208,40 @@ function SalonDetailContent({ salonId }: { salonId: string }) {
           </span>
         </div>
         <p className="mt-1 text-xs text-gray-400">배송완료 시 주문 금액의 1%가 자동 적립돼요.</p>
+      </div>
+
+      <div>
+        <h4 className="mb-2 text-sm font-semibold text-gray-700">쿠폰</h4>
+        <IssueCouponForm
+          loading={issueCouponMutation.isPending}
+          onSubmit={(couponId) => issueCouponMutation.mutate(couponId)}
+        />
+        {couponsQuery.isLoading ? (
+          <Spinner className="py-4" />
+        ) : couponsQuery.data?.length ? (
+          <ul className="mt-2 space-y-2">
+            {couponsQuery.data.map((sc) => (
+              <li
+                key={sc.id}
+                className="flex items-center justify-between rounded-lg border border-gray-100 p-3"
+              >
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-gray-900">{sc.coupon.name}</span>
+                    <Badge tone={sc.usable ? 'blue' : 'gray'}>
+                      {sc.usable ? '사용 가능' : '사용 완료'}
+                    </Badge>
+                  </div>
+                  <p className="mt-0.5 text-xs text-gray-400">
+                    {sc.coupon.usageLimit} · 발급일 {formatDateTime(sc.createdAt)}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-2 py-2 text-center text-sm text-gray-400">발급된 쿠폰이 없어요.</p>
+        )}
       </div>
 
       <div>
