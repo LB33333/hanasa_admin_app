@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useRef, useState } from 'react';
+import { manufacturersApi } from '@/api/manufacturers';
 import { ordersApi } from '@/api/orders';
 import { AdminProduct } from '@/types/product';
 import { FloatingDropdown } from '@/components/ui/FloatingDropdown';
 import { Input, Select } from '@/components/ui/formControls';
-import { PRODUCT_MANUFACTURERS } from '@/constants/manufacturers';
 
 export function ProductPicker({
   products,
@@ -23,6 +23,11 @@ export function ProductPicker({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const selected = products.find((p) => p.id === value) ?? null;
+
+  const { data: manufacturers } = useQuery({
+    queryKey: ['manufacturers'],
+    queryFn: manufacturersApi.list,
+  });
 
   const purchasedQuery = useQuery({
     queryKey: ['orders', 'purchased-products', salonId],
@@ -82,9 +87,9 @@ export function ProductPicker({
             className="w-full"
           >
             <option value="">전체 회사</option>
-            {PRODUCT_MANUFACTURERS.map((m) => (
-              <option key={m} value={m}>
-                {m}
+            {(manufacturers ?? []).map((m) => (
+              <option key={m.id} value={m.name}>
+                {m.name}
               </option>
             ))}
           </Select>

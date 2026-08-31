@@ -2,13 +2,13 @@ import { useQuery } from '@tanstack/react-query';
 import { Plus, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { manufacturersApi } from '@/api/manufacturers';
 import { productsApi } from '@/api/products';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Input, Select } from '@/components/ui/formControls';
 import { Spinner } from '@/components/ui/Spinner';
-import { PRODUCT_MANUFACTURERS } from '@/constants/manufacturers';
 import { PRODUCT_MAIN_CATEGORIES } from '@/constants/productCategories';
 import { formatCurrency } from '@/lib/format';
 
@@ -17,6 +17,11 @@ export default function ProductsPage() {
   const [mainCategory, setMainCategory] = useState('');
   const [includeDeleted, setIncludeDeleted] = useState(false);
   const [search, setSearch] = useState('');
+
+  const { data: manufacturers } = useQuery({
+    queryKey: ['manufacturers'],
+    queryFn: manufacturersApi.list,
+  });
 
   const { data, isLoading } = useQuery({
     queryKey: ['products', { manufacturer, mainCategory, includeDeleted }],
@@ -65,9 +70,9 @@ export default function ProductsPage() {
           className="sm:w-40"
         >
           <option value="">전체 제조사</option>
-          {PRODUCT_MANUFACTURERS.map((m) => (
-            <option key={m} value={m}>
-              {m}
+          {(manufacturers ?? []).map((m) => (
+            <option key={m.id} value={m.name}>
+              {m.name}
             </option>
           ))}
         </Select>

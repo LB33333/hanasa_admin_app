@@ -1,6 +1,7 @@
+import { useQuery } from '@tanstack/react-query';
+import { manufacturersApi } from '@/api/manufacturers';
 import { ImageUploader } from '@/components/ui/ImageUploader';
 import { Field, Input, Select, Textarea } from '@/components/ui/formControls';
-import { PRODUCT_MANUFACTURERS } from '@/constants/manufacturers';
 import { PRODUCT_CATEGORY_MAP, PRODUCT_MAIN_CATEGORIES } from '@/constants/productCategories';
 import { ProductBasicFormState } from './productForm';
 
@@ -12,6 +13,16 @@ export function ProductBasicFields({
   onChange: (patch: Partial<ProductBasicFormState>) => void;
 }) {
   const subCategories = value.mainCategory ? PRODUCT_CATEGORY_MAP[value.mainCategory] : [];
+  const { data: manufacturers } = useQuery({
+    queryKey: ['manufacturers'],
+    queryFn: manufacturersApi.list,
+  });
+  // 수정 화면에서 이미 저장된 제조사가 목록에서 사라졌어도 선택값은 유지해 보여준다.
+  const manufacturerNames = manufacturers?.map((m) => m.name) ?? [];
+  const manufacturerOptions =
+    value.manufacturer && !manufacturerNames.includes(value.manufacturer)
+      ? [value.manufacturer, ...manufacturerNames]
+      : manufacturerNames;
 
   return (
     <div className="space-y-4">
@@ -34,7 +45,7 @@ export function ProductBasicFields({
             onChange={(e) => onChange({ manufacturer: e.target.value })}
           >
             <option value="">선택</option>
-            {PRODUCT_MANUFACTURERS.map((m) => (
+            {manufacturerOptions.map((m) => (
               <option key={m} value={m}>
                 {m}
               </option>

@@ -9,6 +9,7 @@ import OrdersPage from '@/pages/orders/OrdersPage';
 import ProductsPage from '@/pages/products/ProductsPage';
 import ProductCreatePage from '@/pages/products/ProductCreatePage';
 import ProductEditPage from '@/pages/products/ProductEditPage';
+import ManufacturersPage from '@/pages/manufacturers/ManufacturersPage';
 import BannersPage from '@/pages/banners/BannersPage';
 import CouponsPage from '@/pages/coupons/CouponsPage';
 import NoticesPage from '@/pages/notices/NoticesPage';
@@ -38,6 +39,7 @@ export default function App() {
         <Route path="products" element={<ProductsPage />} />
         <Route path="products/new" element={<ProductCreatePage />} />
         <Route path="products/:id/edit" element={<ProductEditPage />} />
+        <Route path="manufacturers" element={<ManufacturersPage />} />
         <Route path="banners" element={<BannersPage />} />
         <Route path="coupons" element={<CouponsPage />} />
         <Route path="notices" element={<NoticesPage />} />

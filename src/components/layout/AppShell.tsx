@@ -1,5 +1,6 @@
 import {
   Bell,
+  Factory,
   Image as ImageIcon,
   LayoutDashboard,
   LogOut,
@@ -17,6 +18,7 @@ const NAV_ITEMS = [
   { to: '/salons', label: '살롱', icon: Store },
   { to: '/orders', label: '주문', icon: ShoppingBag },
   { to: '/products', label: '상품', icon: Package },
+  { to: '/manufacturers', label: '제조사', icon: Factory },
   { to: '/banners', label: '배너', icon: ImageIcon },
   { to: '/coupons', label: '쿠폰', icon: Ticket },
   { to: '/notices', label: '공지', icon: Megaphone },
