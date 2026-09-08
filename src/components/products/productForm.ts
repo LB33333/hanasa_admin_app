@@ -34,7 +34,6 @@ export function isProductFormValid(form: ProductBasicFormState): boolean {
       form.subCategory &&
       form.imageUrl &&
       form.capacity.trim() &&
-      form.description.trim() &&
       form.costPrice !== '' &&
       form.salonPrice !== '' &&
       form.offlinePrice !== '' &&

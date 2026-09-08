@@ -43,7 +43,7 @@ export default function ProductEditPage() {
       subCategory: product.subCategory,
       imageUrl: product.imageUrl,
       capacity: product.capacity,
-      description: product.description,
+      description: product.description ?? '',
       costPrice: String(product.costPrice),
       salonPrice: String(product.salonPrice),
       offlinePrice: String(product.offlinePrice),

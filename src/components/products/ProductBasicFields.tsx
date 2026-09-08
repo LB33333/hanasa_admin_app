@@ -90,8 +90,7 @@ export function ProductBasicFields({
 
       <Field
         label="설명"
-        required
-        hint="마크다운 문법을 지원해요. 예: ## 제목, **굵게**, - 목록"
+        hint="선택 입력이에요. 비워두면 앱에 설명 섹션이 안 보여요. 마크다운 문법 지원: ## 제목, **굵게**, - 목록"
       >
         {/* 데스크톱에선 입력창 옆에 실시간 미리보기, 모바일에선 입력창만 */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
