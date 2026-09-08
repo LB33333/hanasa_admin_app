@@ -5,8 +5,7 @@ export type ProductBasicFormState = {
   subCategory: string;
   imageUrl: string;
   capacity: string;
-  features: string;
-  usageGuideline: string;
+  description: string;
   costPrice: string;
   salonPrice: string;
   offlinePrice: string;
@@ -20,8 +19,7 @@ export const EMPTY_PRODUCT_FORM: ProductBasicFormState = {
   subCategory: '',
   imageUrl: '',
   capacity: '',
-  features: '',
-  usageGuideline: '',
+  description: '',
   costPrice: '',
   salonPrice: '',
   offlinePrice: '',
@@ -36,8 +34,7 @@ export function isProductFormValid(form: ProductBasicFormState): boolean {
       form.subCategory &&
       form.imageUrl &&
       form.capacity.trim() &&
-      form.features.trim() &&
-      form.usageGuideline.trim() &&
+      form.description.trim() &&
       form.costPrice !== '' &&
       form.salonPrice !== '' &&
       form.offlinePrice !== '' &&

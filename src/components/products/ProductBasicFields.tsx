@@ -87,19 +87,16 @@ export function ProductBasicFields({
         </Field>
       </div>
 
-      <Field label="특징" required>
+      <Field
+        label="설명"
+        required
+        hint="마크다운 문법을 지원해요. 예: ## 제목, **굵게**, - 목록"
+      >
         <Textarea
-          rows={3}
-          value={value.features}
-          onChange={(e) => onChange({ features: e.target.value })}
-        />
-      </Field>
-
-      <Field label="사용법" required>
-        <Textarea
-          rows={3}
-          value={value.usageGuideline}
-          onChange={(e) => onChange({ usageGuideline: e.target.value })}
+          rows={8}
+          value={value.description}
+          onChange={(e) => onChange({ description: e.target.value })}
+          placeholder={'## 제품 특징\n\n- 특징을 적어주세요\n\n## 사용 방법\n\n1. 사용법을 적어주세요'}
         />
       </Field>
 

@@ -17,8 +17,7 @@ export type AdminProduct = {
   subCategory: string;
   imageUrl: string;
   capacity: string;
-  features: string;
-  usageGuideline: string;
+  description: string;
   costPrice: number;
   salonPrice: number;
   offlinePrice: number;
@@ -41,8 +40,7 @@ export type CreateProductPayload = {
   subCategory: string;
   imageUrl: string;
   capacity: string;
-  features: string;
-  usageGuideline: string;
+  description: string;
   costPrice: number;
   salonPrice: number;
   offlinePrice: number;
