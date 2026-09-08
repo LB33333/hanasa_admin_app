@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { manufacturersApi } from '@/api/manufacturers';
+import { MarkdownPreview } from '@/components/products/MarkdownPreview';
 import { ImageUploader } from '@/components/ui/ImageUploader';
 import { Field, Input, Select, Textarea } from '@/components/ui/formControls';
 import { PRODUCT_CATEGORY_MAP, PRODUCT_MAIN_CATEGORIES } from '@/constants/productCategories';
@@ -92,12 +93,25 @@ export function ProductBasicFields({
         required
         hint="마크다운 문법을 지원해요. 예: ## 제목, **굵게**, - 목록"
       >
-        <Textarea
-          rows={8}
-          value={value.description}
-          onChange={(e) => onChange({ description: e.target.value })}
-          placeholder={'## 제품 특징\n\n- 특징을 적어주세요\n\n## 사용 방법\n\n1. 사용법을 적어주세요'}
-        />
+        {/* 데스크톱에선 입력창 옆에 실시간 미리보기, 모바일에선 입력창만 */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <Textarea
+            rows={12}
+            value={value.description}
+            onChange={(e) => onChange({ description: e.target.value })}
+            placeholder={'## 제품 특징\n\n- 특징을 적어주세요\n\n## 사용 방법\n\n1. 사용법을 적어주세요'}
+          />
+          <div className="hidden max-h-80 overflow-y-auto rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 sm:block">
+            <p className="mb-1 text-[11px] font-medium uppercase tracking-wide text-gray-400">
+              앱 표시 미리보기
+            </p>
+            {value.description.trim() ? (
+              <MarkdownPreview markdown={value.description} />
+            ) : (
+              <p className="text-sm text-gray-300">왼쪽에 입력하면 여기에 미리보기가 떠요.</p>
+            )}
+          </div>
+        </div>
       </Field>
 
       <div className="grid grid-cols-2 gap-3">
