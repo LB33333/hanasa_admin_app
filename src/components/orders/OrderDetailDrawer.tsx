@@ -180,6 +180,12 @@ function OrderDetailContent({ order }: { order: AdminOrder }) {
             ),
           )}
         </ul>
+        {order.pointsUsed > 0 && (
+          <div className="mt-2 flex justify-between px-1 text-sm text-gray-500">
+            <span>적립금 사용</span>
+            <span className="text-red-500">-{formatCurrency(order.pointsUsed)}</span>
+          </div>
+        )}
         <div className="mt-2 flex justify-between px-1 text-sm font-semibold text-gray-900">
           <span>합계</span>
           <span>{formatCurrency(order.totalAmount)}</span>
