@@ -14,7 +14,10 @@ export type OrderItemSummary = {
 export type AdminOrder = {
   id: string;
   status: OrderStatus;
+  // 쿠폰 할인과 적립금 사용을 모두 반영한 최종 금액
   totalAmount: number;
+  // 원장님이 이 주문에 사용한 적립금(원). 취소하면 자동으로 돌려준다.
+  pointsUsed: number;
   arrivalDate: string | null;
   createdAt: string;
   salon: {
